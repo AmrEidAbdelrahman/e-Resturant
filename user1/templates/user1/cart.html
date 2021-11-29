@@ -1,0 +1,106 @@
+{% extends "resturant/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+	{% for item in items %}
+		<div class="par card mb-3" style="max-width: 540px;">
+		  <div class="row g-0">
+		    <div class="col-md-4">
+		      <a href=""><img src="{{ item.image.url }}" class="img-fluid rounded-start" alt="..."></a>
+		    </div>
+		    <div class="col-md-8">
+		      <div class="card-body">
+		        <a href=""><h5 class="card-title">{{ item.id }}</h5></a>
+		        <p class="card-text">Rate: {{ item.rate }}</p>
+		        <p class="card-text">{{ item.describtion }}</p>
+		        <p class="card-text">
+		        	<small class="text-muted">Price: {{item.price}}</small>
+		        	&nbsp
+		        	<small class="text-muted">available: {{ item.available }}</small>
+		        </p>
+		        <div>
+		        	<form class="remove-from-cart">
+		        		{% csrf_token %}
+		        		<input type="hidden" name="item_id" value="{{ item.id }}">
+		        		<input type="hidden" name="user_id" value="{{ user.id }}">
+		        		<button type="submit" class="btn btn-danger">Remove From Cart</button>
+		        	</form>
+		        </div>
+		        <p class="card-text">
+		        </p>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+	{% endfor %}
+	<nav aria-label="Page navigation example">
+  		<ul class="pagination">
+  		{% if items.has_previous %}
+  			<li class="page-item">
+  				<a class="page-link" href="?page=1">First</a>
+  			</li>
+  			<li class="page-item">
+  				<a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+  			</li>
+  		{% endif %}
+		{% for num in items.paginator.page_range %}
+			{% if items.number == num %}
+			<li class="page-item">
+				<a class="btn btn-primary" href="?page={{ num }}">{{ num }}</a>
+			</li>
+			{% elif num > items.number|add:'-3' and num < items.number|add:'3' %}
+			<li class="page-item">
+				<a class="page-link" href="?page={{ num }}">{{ num }}</a>
+			</li>
+			{% endif %}
+		{% endfor %}
+		{% if items.has_next %}
+			<li class="page-item"><a class="page-link" href="?page={{ items.next_page_number }}">Next</a></li>
+			<li class="page-item"><a class="page-link" href="?page={{ items.paginator.num_pages }}">Last</a></li>
+		{% endif %}
+		</ul>
+	</nav>
+	
+{% endblock content %}
+
+
+{% block script %}
+	<script type="text/javascript">
+		
+		$(function () {
+		    $.ajaxSetup({
+		        headers: { 'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content') }
+		    });
+		});
+
+
+		$(".remove-from-cart").submit(function (e) {
+        // preventing from page reload and default actions
+        e.preventDefault();
+        // serialize the data for sending the form data.
+        var serializedData = $(this).serialize();
+        t = $(this);
+        console.log(t)
+        // make POST ajax call
+        $.ajax({
+	            type: 'POST',
+	            url: "{% url 'remove-from-cart' %}",
+	            data: serializedData,
+	            success: function (response) {
+	                // on successfull creating object
+	                t.parents(".par").remove()
+	                console.log(response);
+	            },
+	            error: function (response) {
+	                // alert the error if any error occured
+	                //alert("DASD");
+	                alert(response["responseJSON"]["error"]);
+	                console.log(response["responseJSON"]["error"])
+	            }
+	        })
+    })
+
+	</script>
+
+{% endblock script %}
+

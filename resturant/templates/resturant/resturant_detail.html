@@ -1,0 +1,156 @@
+{% extends "resturant/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+	<div class="container">
+		<div class="card mb-3" style="max-width: 100%;">
+		  <div class="row g-0">
+		    <div class="col-md-4">
+		      <img src="{{ resturant.image.url }}" class="img-fluid rounded-start" alt="...">
+		    </div>
+		    <div class="col-md-8">
+		      <div class="card-body">
+		        <h5 class="card-title">{{ resturant.name }}</h5>
+		        <p class="card-text">Rate: {{ resturant.rate }}</p>
+		        <p class="card-text">{{ resturant.address }}</p>
+		        <p class="card-text">
+		        	<small class="text-muted">Min: {{ resturant.min_charge }}</small>
+		        	&nbsp
+		        	<small class="text-muted">delivery: {{ resturant.deliver }}</small>
+		        </p>
+		        <p class="card-text">
+		        </p>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+		<img src="" alt="">
+		<div class="card text-center">
+		  <div class="card-header">
+		    <ul class="nav nav-tabs card-header-tabs">
+		      <li class="nav-item">
+		        <a class="nav-link active" aria-current="true" href="#">Active</a>
+		      </li>
+		      <li class="nav-item">
+		        <a class="nav-link" href="#">Link</a>
+		      </li>
+		      <li class="nav-item">
+		        <a class="nav-link disabled">Disabled</a>
+		      </li>
+		    </ul>
+		  </div>
+		  <div class="card-body">
+		  	{% for item in items %}
+			    <div class="card border-light mb-3" style="max-width: 100%;">
+				  <div class="row g-0">
+				    <div class="col-md-4">
+				      <a href=""><img src="{{ item.image.url }}" class="img-fluid rounded-start" alt="..."></a>
+				    </div>
+				    <div class="col-md-8">
+				      <div class="card-body">
+				        <h5 class="card-title">{{ item.name }}</h5>
+				        <p class="card-text">Rate: {{ item.price }}</p>
+				        <p class="card-text">{{ item.describtion }}</p>
+				        <p class="card-text">
+				        	<small class="text-muted">Rate: {{ item.rate }}</small>
+				        	&nbsp
+				        	<small class="text-muted">Available</small>
+				        </p>
+				        <p class="card-text">
+				        </p>
+				        <div class="text-end">
+				        	<form class="add_to_cart">
+				        		{% csrf_token %}
+				        		<input type="hidden" name="resturant_id" value="{{ resturant.id }}">
+				        		<input type="hidden" name="user_id" value="{{ user.id }}">
+					        	<input type="hidden" name="item_id" value="{{ item.id }}">	
+					        	<button type="submit" class="btn {% if item.id in cart_items %}btn-danger{% else %}btn-primary{% endif %}">
+					        		{% if item.id in cart_items %}
+					        			Remove
+					        		{% else %}
+					        			Add To Cart
+					        		{% endif %}
+					        	</button>
+				        	</form>
+				        </div>
+				      </div>
+				    </div>
+				  </div>
+				  <div class="card-footer bg-transparent border-success">Footer</div>
+				</div>
+				<hr>
+		  	{% endfor %}
+		    <a href="#" class="btn btn-primary">Go somewhere</a>
+		  </div>
+		</div>
+	</div>
+{% endblock content %}
+{% block script %}
+	<script type="text/javascript">
+
+		$(function () {
+		    $.ajaxSetup({
+		        headers: { 'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content') }
+		    });
+		});
+
+
+		$(".add_to_cart").submit(function (e) {
+        // preventing from page reload and default actions
+        e.preventDefault();
+        // serialize the data for sending the form data.
+        var serializedData = $(this).serialize();
+        
+        t = $(this);
+        btn = t.children("button");
+
+        // make POST ajax call
+        if(btn.hasClass('btn-primary')){
+	        $.ajax({
+	            type: 'POST',
+	            url: "{% url 'add-to-cart' %}",
+	            data: serializedData,
+	            success: function (response) {
+	                // on successfull creating object
+
+	                t.children("button").removeClass("btn-primary");
+	                t.children("button").addClass("btn-danger");
+	                t.children("button").text("Remove");
+	                t.removeClass("add_to_cart");
+	                t.addClass("remove_from_cart");
+	            },
+	            error: function (response) {
+	                // alert the error if any error occured
+	                alert(response["responseJSON"]["error"]);
+	            }
+	        })
+        }
+        else if(btn.hasClass('btn-danger')){
+        	$.ajax({
+	            type: 'POST',
+	            url: "{% url 'remove-from-cart' %}",
+	            data: serializedData,
+	            success: function (response) {
+	                // on successfull creating object
+
+	                t.children("button").removeClass("btn-danger");
+	                t.children("button").addClass("btn-primary");
+	                t.children("button").text("Add To Cart");
+	                t.removeClass("remove_from_cart")
+	                t.addClass("add_to_cart")
+	                
+	            },
+	            error: function (response) {
+	                // alert the error if any error occured
+	                alert(response["responseJSON"]["error"]);
+	            }
+	        })
+        }
+    })
+
+
+
+	</script>
+{% endblock script %}
+
+
+
