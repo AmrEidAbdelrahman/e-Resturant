@@ -3,6 +3,7 @@
 {% block content %}
 	<div class="row">
 		<div class="col-md-8">
+	        {% if items %}
 			
 			{% for item in items %}
 			<div class="par card mb-3" style="max-width: 540px;">
@@ -80,6 +81,9 @@
 	        	<input type="hidden" name="user_id" value="{{ user.id }}">
 	        	<button class="btn btn-primary">Order Now</button>
 	        </form>
+	        {% else %}
+	        <p>No Items In Cart <a href="{% url 'menu-home' %}">Eat Now</a></p>
+	        {% endif %}
 	      </div>
 	    </div>
 	</div>

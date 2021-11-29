@@ -143,8 +143,9 @@ class OrderListView(ListView):
 
 	
 def OrderDetail(request,order_id):
+
 	order = Order.objects.filter(pk=order_id).first()
-	items = order.items.all()
+	items = order.orderitem_set.all()
 
 	context = {
 		'items':items,
@@ -157,17 +158,10 @@ def OrderNow(request):
 	if request.method == "POST":
 		user_id = request.POST.get('user_id')
 		user = User.objects.get(pk=user_id)
-		resturant = user.cart.resturant_id
-		#it = user.cart.cartitem_set.values_list('item')
-		#items = Item.objects.filter(pk__in= it)
+		resturant = user.cart.cartitem_set.first().item.first().resturant
 		item_quantity = user.cart.cartitem_set.values_list('item','quantity')
-		#order = user.order_set.create()
-		resturant = Resturant.objects.get(pk=resturant)
 		
-		order = Order.objects.create()
-		order.user = user
-		order.resturant = resturant
-
+		order = Order.objects.create(user=user,resturant=resturant)
 		for (i,q) in item_quantity:
 			order_item = OrderItem.objects.create()
 			order_item.order.set([order])
@@ -179,13 +173,14 @@ def OrderNow(request):
 			order_item.save()
 		order.save()
 		user.cart.cartitem_set.all().delete()
-
+		'''
 		context = {
 			#'user_':user_id,
 			#'quantity':dict(quantity),
 			#'order_item':order_item,
-			'resturant':resturant.id
+			'resturant':resturant
 		}
+		'''
 	#return render(request, 'resturant/order_now.html', context)
 	return HttpResponseRedirect(reverse('order'))
 
