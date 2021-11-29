@@ -2,12 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
-from .models import Profile
+from .models import Profile, Cart
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
 from django.contrib import messages
 from django.contrib.auth.models import User
 from resturant.models import Item
+
+from django.db.models import Count, Sum
 # Create your views here.
 
 
@@ -53,6 +55,9 @@ def CartList(request):
 	user = get_object_or_404(User, id=request.user.id)
 	it = user.cart.cartitem_set.values_list('item')
 	items = Item.objects.filter(pk__in= it)
+	num_of_items = items.aggregate(Count('id'))
+	price = items.aggregate(Sum('price'))
+
 	page = request.GET.get('page')
 	
 	paginator = Paginator(items, 2)
@@ -67,6 +72,8 @@ def CartList(request):
 
 	context = {
 		'items':items,
+		'num_of_items':num_of_items,
+		'price':price,
 	}
 
 	return render(request, 'user1/cart.html', context)

@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, JsonResponse
-from .models import Resturant, Item, Order
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.urls import reverse
+from .models import Resturant, Item, Order, OrderItem
 from user1.models import Cart, CartItem
 from django.contrib.auth.models import User
 from django.views.generic import ListView, DetailView
@@ -40,6 +41,13 @@ def ResturantDetail(request, resturant_id):
 	resturant_details = get_object_or_404(Resturant, id=resturant_id)
 	items = resturant_details.item_set.all()
 	user = request.user
+
+	if user.cart:
+		cart = user.cart
+	else:
+		cart = Cart.objects.create()
+		cart.user = user
+
 	cart_items = user.cart.cartitem_set.values_list('item',flat=True)
 	cart_items = list(cart_items)
 	context = {
@@ -53,16 +61,23 @@ def ResturantDetail(request, resturant_id):
 def add_to_cart(request):
 	if request.is_ajax and request.method == "POST":
 		try:
-			#data = json.load(request)
-			#item = "dasdsa"
-			#item = data.get("item_id")
 			item_id = request.POST.get('item_id')
 			item = Item.objects.get(pk=item_id)
-			resturant_id = request.POST.get('resturant_id')
-			resturant = Resturant.objects.get(pk=resturant_id)
+			resturant_id1 = request.POST.get('resturant_id')
+			resturant = Resturant.objects.get(pk=resturant_id1)
 			user_id = request.POST.get('user_id')
 			user = User.objects.get(pk=user_id)
 			cart = user.cart
+
+			try:
+				resturant_id2 = cart.cartitem_set.first().item.first().resturant.id
+				if int(resturant_id1) == int(resturant_id2):
+					pass	
+				else:
+					cart.cartitem_set.all().delete()
+			except:
+				d = 1
+
 
 			data = {
 				'item':item.id,
@@ -70,10 +85,11 @@ def add_to_cart(request):
 				'user':user.cart.id,
 				'cart':cart.id,
 			}
+
 			cart_item = CartItem.objects.create(cart=cart)
 			cart_item.resturant.set([resturant])
 			cart_item.item.set([item])
-			cart_item.quantity = 10
+			cart_item.quantity = 1
 			cart_item.save()
 			#cart_item = CartItem(cart=cart, resturant= resturant, item=item, quantity=100)
 			#cart_item.save()
@@ -136,4 +152,40 @@ def OrderDetail(request,order_id):
 
 	return render(request,'resturant/order_detail.html', context)
 
+
+def OrderNow(request):
+	if request.method == "POST":
+		user_id = request.POST.get('user_id')
+		user = User.objects.get(pk=user_id)
+		resturant = user.cart.resturant_id
+		#it = user.cart.cartitem_set.values_list('item')
+		#items = Item.objects.filter(pk__in= it)
+		item_quantity = user.cart.cartitem_set.values_list('item','quantity')
+		#order = user.order_set.create()
+		resturant = Resturant.objects.get(pk=resturant)
+		
+		order = Order.objects.create()
+		order.user = user
+		order.resturant = resturant
+
+		for (i,q) in item_quantity:
+			order_item = OrderItem.objects.create()
+			order_item.order.set([order])
+			order_item.items.set([i])
+			order_item.quantity = q
+			#oreder_item = order.orderitem_set.add()
+			#order_item.item = i
+			#order_item.quantity = q
+			order_item.save()
+		order.save()
+		user.cart.cartitem_set.all().delete()
+
+		context = {
+			#'user_':user_id,
+			#'quantity':dict(quantity),
+			#'order_item':order_item,
+			'resturant':resturant.id
+		}
+	#return render(request, 'resturant/order_now.html', context)
+	return HttpResponseRedirect(reverse('order'))
 

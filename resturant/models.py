@@ -33,9 +33,13 @@ class Item(models.Model):
 class Order(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE)
 	resturant = models.ForeignKey(Resturant, on_delete=models.CASCADE)
-	items = models.ManyToManyField(Item)
-	status = models.IntegerField(default=1)
-
-
+	
 	def __str__(self):
 		return f"from {self.resturant} to {self.user}."
+
+
+class OrderItem(models.Model):
+	order = models.ManyToManyField(Order)
+	items = models.ManyToManyField(Item)
+	quantity = models.IntegerField(default=1)
+	status = models.IntegerField(default=1)

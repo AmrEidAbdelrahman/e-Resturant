@@ -16,12 +16,14 @@ class Profile(models.Model):
 
 class Cart(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE)
+	#resturant = models.ForeignKey(Resturant, default=2, on_delete=models.CASCADE)
 
 	def __str__(self):
 		return f"Cart of {self.user.username} "
 
+
 class CartItem(models.Model):
-	cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+	cart = models.ForeignKey(Cart, default=1, on_delete=models.CASCADE)
 	resturant = models.ManyToManyField(Resturant)
 	item = models.ManyToManyField(Item)
 	quantity = models.IntegerField(default=1)
