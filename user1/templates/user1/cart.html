@@ -2,8 +2,8 @@
 {% load crispy_forms_tags %}
 {% block content %}
 	<div class="row">
+	    {% if items %}
 		<div class="col-md-8">
-	        {% if items %}
 			
 			{% for item in items %}
 			<div class="par card mb-3" style="max-width: 540px;">
@@ -13,7 +13,7 @@
 			    </div>
 			    <div class="col-md-8">
 			      <div class="card-body">
-			        <a href=""><h5 class="card-title">{{ item.id }}</h5></a>
+			        <a href=""><h5 class="card-title">{{ item.name }}</h5></a>
 			        <p class="card-text">Rate: {{ item.rate }}</p>
 			        <p class="card-text">{{ item.describtion }}</p>
 			        <p class="card-text">
@@ -67,7 +67,6 @@
 		<div class="col-md-4">
 	      <div class="content-section">
 	        <h3>Our Sidebar</h3>
-	        <p class='text-muted'>You can put any information here you'd like.
 	          <ul class="list-group">
 	            <li class="list-group-item list-group-item-light">Number of items: {{ num_of_items.id__count }} items</li>
 	            <li class="list-group-item list-group-item-light">Price: {{ price.price__sum }} L.E</li>
@@ -81,11 +80,33 @@
 	        	<input type="hidden" name="user_id" value="{{ user.id }}">
 	        	<button class="btn btn-primary">Order Now</button>
 	        </form>
-	        {% else %}
-	        <p>No Items In Cart <a href="{% url 'menu-home' %}">Eat Now</a></p>
-	        {% endif %}
 	      </div>
 	    </div>
+        {% else %}
+	        <div class="col-md-8">
+	        	<p>No Items In Cart <a href="{% url 'menu-home' %}">Eat Now</a></p>
+	        </div>
+	        <div class="col-md-4">
+		      <div class="content-section">
+		        <h3>Our Sidebar</h3>
+		        <p class='text-muted'>You can put any information here you'd like.
+		          <ul class="list-group">
+		            <li class="list-group-item list-group-item-light">Number of items: {{ num_of_items.id__count }} items</li>
+		            <li class="list-group-item list-group-item-light">Price: {{ price.price__sum }} L.E</li>
+		            <li class="list-group-item list-group-item-light">Discount: 0 L.E</li>
+		            <li class="list-group-item list-group-item-light">Total Price: {{ price.price__sum }}</li>
+		          </ul>
+		        </p>
+		        <form action="{% url 'order-now' %}" method="POST">
+		        	{% csrf_token %}
+		        	
+		        	<input type="hidden" name="user_id" value="{{ user.id }}">
+		        	<button class="btn btn-primary">Order Now</button>
+		        </form>
+		      </div>
+		    </div>
+        </div>
+        {% endif %}
 	</div>
 	
 {% endblock content %}
