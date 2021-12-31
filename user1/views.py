@@ -36,7 +36,9 @@ def profile(request):
 		p_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
 		if u_form.is_valid() and p_form.is_valid():
 			u_form.save()
+			print(request.user.profile.image.url)
 			p_form.save()
+			print(request.user.profile.image.url)
 			messages.success(request, f'You Profile save')
 			return redirect('profile')
 	else:

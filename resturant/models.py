@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 # Create your models here.
 
@@ -16,6 +17,10 @@ class Resturant(models.Model):
 		return self.name
 
 
+	def get_absolute_url(self):
+		return reverse('resturant-detail', kwargs={'resturant_id':self.pk})
+
+
 class Item(models.Model):
 	name = models.CharField(max_length=128)
 	image= models.ImageField(default='default.jpg', upload_to='item_imgs')
@@ -24,22 +29,23 @@ class Item(models.Model):
 	rate = models.IntegerField(default=2)
 	available = models.BooleanField(default=True)
 
-	resturant = models.ForeignKey(Resturant, on_delete=models.CASCADE)
+	resturant = models.ForeignKey(Resturant, 
+									on_delete=models.CASCADE)
 
 	def __str__(self):
 		return self.name
 
 
 class Order(models.Model):
-	user = models.ForeignKey(User, on_delete=models.CASCADE)
-	resturant = models.ForeignKey(Resturant, on_delete=models.CASCADE)
+	user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+	resturant = models.OneToOneField(Resturant, on_delete=models.CASCADE, null=True)
 	
 	def __str__(self):
 		return f"from {self.resturant} to {self.user}."
 
 
 class OrderItem(models.Model):
-	order = models.ManyToManyField(Order)
-	items = models.ManyToManyField(Item)
+	order = models.ForeignKey(Order, on_delete=models.CASCADE , null=True)
+	items = models.OneToOneField(Item, on_delete=models.CASCADE, null=True)
 	quantity = models.IntegerField(default=1)
 	status = models.IntegerField(default=1)

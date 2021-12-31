@@ -5,6 +5,7 @@ from .models import Resturant, Item, Order, OrderItem
 from user1.models import Cart, CartItem
 from django.contrib.auth.models import User
 from django.views.generic import ListView, DetailView
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def home(request):
@@ -17,13 +18,12 @@ def home(request):
 def about(request):
 	return render(request,'resturant/about.html')
 
-
+@login_required(login_url='/login/')
 def menu(request):
 	context = {
 		'items': menu_item.objects.all
 	}
 	return render(request, 'resturant/menu.html',context)
-
 
 class ResturantListView(ListView):
 	model = Resturant
@@ -35,7 +35,7 @@ class ResturantListView(ListView):
 
 
 
-
+@login_required(login_url='/login/')
 def ResturantDetail(request, resturant_id):
 	#resturant_details = Resturant.objects.filter(id=resturant_id)
 	resturant_details = get_object_or_404(Resturant, id=resturant_id)
@@ -57,7 +57,7 @@ def ResturantDetail(request, resturant_id):
 	}
 	return render(request, 'resturant/resturant_detail.html', context)
 
-
+@login_required(login_url='/login/')
 def add_to_cart(request):
 	if request.is_ajax and request.method == "POST":
 		try:
@@ -97,7 +97,7 @@ def add_to_cart(request):
 		except Exception as e:
 			return JsonResponse({"error":str(e)}, status=404)
 
-
+@login_required(login_url='/login/')
 def remove_from_cart(request):
 	if request.is_ajax and request.method == "POST":
 		try:
@@ -141,7 +141,7 @@ class OrderListView(ListView):
 #		order = Order.objects.filter(pk=self.kwargs.get('pk'))
 #		return order
 
-	
+@login_required(login_url='/login/')	
 def OrderDetail(request,order_id):
 
 	order = Order.objects.filter(pk=order_id).first()
@@ -153,7 +153,7 @@ def OrderDetail(request,order_id):
 
 	return render(request,'resturant/order_detail.html', context)
 
-
+@login_required(login_url='/login/')
 def OrderNow(request):
 	if request.method == "POST":
 		user_id = request.POST.get('user_id')
