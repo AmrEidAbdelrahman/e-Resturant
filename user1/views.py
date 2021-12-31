@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
-from .models import Profile, Cart
+from .models import Profile
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm
 from django.contrib import messages
@@ -55,7 +55,8 @@ def profile(request):
 @login_required
 def CartList(request):
 	user = get_object_or_404(User, id=request.user.id)
-	it = user.cart.cartitem_set.values_list('item')
+	cart = user.cart_set.last()
+	it = cart.cartitem_set.values_list('item')
 	items = Item.objects.filter(pk__in= it)
 	num_of_items = items.aggregate(Count('id'))
 	price = items.aggregate(Sum('price'))

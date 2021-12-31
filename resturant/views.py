@@ -42,13 +42,14 @@ def ResturantDetail(request, resturant_id):
 	items = resturant_details.item_set.all()
 	user = request.user
 
-	if user.cart:
-		cart = user.cart
+	if user.cart_set.last():
+		cart = user.cart_set.last()
 	else:
 		cart = Cart.objects.create()
 		cart.user = user
 
-	cart_items = user.cart.cartitem_set.values_list('item',flat=True)
+
+	cart_items = cart.cartitem_set.values_list('item',flat=True)
 	cart_items = list(cart_items)
 	context = {
 		'resturant':resturant_details,
@@ -67,13 +68,15 @@ def add_to_cart(request):
 			resturant = Resturant.objects.get(pk=resturant_id1)
 			user_id = request.POST.get('user_id')
 			user = User.objects.get(pk=user_id)
-			cart = user.cart
+			cart = user.cart_set.last()
 
 			try:
-				resturant_id2 = cart.cartitem_set.first().item.first().resturant.id
+				resturant_id2 = cart.cartitem_set.first().item.resturant.id
 				if int(resturant_id1) == int(resturant_id2):
-					pass	
+					print("#############++##########")
+					#pass	
 				else:
+					print("############----##########")
 					cart.cartitem_set.all().delete()
 			except:
 				d = 1
@@ -82,14 +85,14 @@ def add_to_cart(request):
 			data = {
 				'item':item.id,
 				'resturant':resturant.id,
-				'user':user.cart.id,
+				'user':user.id,
 				'cart':cart.id,
 			}
 
-			cart_item = CartItem.objects.create(cart=cart)
-			cart_item.resturant.set([resturant])
-			cart_item.item.set([item])
-			cart_item.quantity = 1
+			cart_item = CartItem(cart=cart, item=item)
+			#cart_item.item.resturant.set([resturant])
+			#cart_item.item.set([item])
+			#cart_item.quantity = 1
 			cart_item.save()
 			#cart_item = CartItem(cart=cart, resturant= resturant, item=item, quantity=100)
 			#cart_item.save()
@@ -105,15 +108,15 @@ def remove_from_cart(request):
 			item = Item.objects.get(pk=item_id)
 			user_id = request.POST.get('user_id')
 			user = User.objects.get(pk=user_id)
-			cart = user.cart
+			cart = user.cart_set.last()
 
 			data = {
 				'item':item.id,
-				'user':user.cart.id,
+				'user':cart.id,
 				'cart':cart.id,
 			}
 
-			item = user.cart.cartitem_set.filter(item=item).first()
+			item = cart.cartitem_set.filter(item=item).last()
 			item.delete()
 
 			return JsonResponse(data, status=200)
@@ -158,21 +161,24 @@ def OrderNow(request):
 	if request.method == "POST":
 		user_id = request.POST.get('user_id')
 		user = User.objects.get(pk=user_id)
-		resturant = user.cart.cartitem_set.first().item.first().resturant
-		item_quantity = user.cart.cartitem_set.values_list('item','quantity')
+		cart = user.cart_set.all().last()
+		resturant = cart.cartitem_set.first().item.resturant
+		item_quantity = cart.cartitem_set.all()
 		
 		order = Order.objects.create(user=user,resturant=resturant)
-		for (i,q) in item_quantity:
-			order_item = OrderItem.objects.create()
-			order_item.order.set([order])
-			order_item.items.set([i])
-			order_item.quantity = q
+		print("#################")
+		print(item_quantity)
+		for i in item_quantity:
+			order_item = OrderItem(order=order, items=i.item, quantity=i.quantity)
+			#order_item.order.set([order])
+			#order_item.items.set([i])
+			#order_item.quantity = q
 			#oreder_item = order.orderitem_set.add()
 			#order_item.item = i
 			#order_item.quantity = q
 			order_item.save()
 		order.save()
-		user.cart.cartitem_set.all().delete()
+		cart.cartitem_set.all().delete()
 		'''
 		context = {
 			#'user_':user_id,
