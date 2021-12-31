@@ -10,9 +10,9 @@ from django.contrib.auth.models import User
 #class CartAdmin(admin.ModelAdmin):
 #	inline = [CartItemAdmin]
 
-class CartItemAdmin(admin.ModelAdmin):
-	filter_horizontal = ("item",)
+#class CartItemAdmin(admin.ModelAdmin):
+#	filter_horizontal = ("item",)
 
 admin.site.register(Profile)
 admin.site.register(Cart)
-admin.site.register(CartItem, CartItemAdmin)
+admin.site.register(CartItem)
