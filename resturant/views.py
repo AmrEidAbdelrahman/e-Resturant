@@ -90,12 +90,7 @@ def add_to_cart(request):
 			}
 
 			cart_item = CartItem(cart=cart, item=item)
-			#cart_item.item.resturant.set([resturant])
-			#cart_item.item.set([item])
-			#cart_item.quantity = 1
 			cart_item.save()
-			#cart_item = CartItem(cart=cart, resturant= resturant, item=item, quantity=100)
-			#cart_item.save()
 			return JsonResponse(data, status=200)
 		except Exception as e:
 			return JsonResponse({"error":str(e)}, status=404)
