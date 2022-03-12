@@ -45,8 +45,8 @@ def ResturantDetail(request, resturant_id):
 	if user.cart_set.last():
 		cart = user.cart_set.last()
 	else:
-		cart = Cart.objects.create()
-		cart.user = user
+		cart = Cart.objects.create(user=user)
+		#cart.user = user
 
 
 	cart_items = cart.cartitem_set.values_list('item',flat=True)

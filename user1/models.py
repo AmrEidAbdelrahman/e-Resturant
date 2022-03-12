@@ -7,8 +7,8 @@ from resturant.models import Resturant, Item
 class Profile(models.Model):
 	user = models.OneToOneField(User, on_delete=models.CASCADE)
 	image = models.ImageField(default='default.jpg', upload_to='profile_pics')
-	address = models.TextField()
-	phone = models.CharField(max_length=11)
+	address = models.TextField(default="need edit")
+	phone = models.CharField(max_length=11, null=True)
 
 	def __str__(self):
 		return self.user.username
